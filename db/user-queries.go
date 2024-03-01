@@ -2,7 +2,9 @@ package db
 
 import (
 	"context"
+	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/koesterjannik/starter/logger"
 )
 
@@ -12,7 +14,31 @@ type User struct {
 	Password string `json:"password"`
 }
 
-func GetAllUsers() ([]User, error) {
+func GetAllUsers() ([]interface{}, error) {
+	DescribeUserTable()
+	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	defer cancel()
+
+	rows, err := Db.Query(ctx, `SELECT id, email, password FROM "User"`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	users, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (interface{}, error) {
+		var user User
+		err := row.Scan(&user.ID, &user.Email, &user.Password)
+		return user, err
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
+/*
+func GetAllUsers() ([]interface{}, error) {
 	DescribeUserTable()
 	rows, err := Db.Query(context.Background(), `SELECT id, email, password FROM "User"`)
 	if err != nil {
@@ -20,22 +46,22 @@ func GetAllUsers() ([]User, error) {
 	}
 	defer rows.Close()
 
-	var users []User
+	var usersSlice []interface{}
 	for rows.Next() {
-		var user User
-		err = rows.Scan(&user.ID, &user.Email, &user.Password)
+		value, err := rows.Values()
+
 		if err != nil {
 			return nil, err
 		}
-		users = append(users, user)
+		usersSlice = append(usersSlice, value)
 	}
 
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return users, nil
-}
+	return usersSlice, nil
+}*/
 
 func DescribeUserTable() (string, error) {
 	rows, err := Db.Query(context.Background(), "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'User'")

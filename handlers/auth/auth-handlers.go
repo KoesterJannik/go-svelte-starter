@@ -21,6 +21,12 @@ func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	if users == nil {
+		// return json with empty array
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte("[]"))
+		return
+	}
 
 	logger.Logger.Info("Get all users performed")
 
