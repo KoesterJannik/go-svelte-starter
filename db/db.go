@@ -18,21 +18,11 @@ func ConnectToDb() {
 		os.Exit(1)
 	}
 	logger.Logger.Info("Connecting to database with url: " + database_url)
-	Db, err := pgx.Connect(context.Background(), database_url)
+	var err error
+	Db, err = pgx.Connect(context.Background(), database_url)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)
 	}
-	defer Db.Close(context.Background())
-
 	logger.Logger.Info("Connected to database")
-	/*var name string
-	var weight int64
-	err = Db.QueryRow(context.Background(), "select name, weight from widgets where id=$1", 42).Scan(&name, &weight)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", err)
-		os.Exit(1)
-	}
-
-	fmt.Println(name, weight)*/
 }

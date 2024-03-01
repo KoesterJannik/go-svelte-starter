@@ -1,8 +1,10 @@
 package auth
 
 import (
+	"encoding/json"
 	"net/http"
 
+	"github.com/koesterjannik/starter/db"
 	"github.com/koesterjannik/starter/logger"
 )
 
@@ -11,4 +13,17 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 	logger.Logger.Info("Health check performed")
 	w.Write([]byte("ok"))
 
+}
+
+func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
+	users, err := db.GetAllUsers()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	logger.Logger.Info("Get all users performed")
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(users)
 }

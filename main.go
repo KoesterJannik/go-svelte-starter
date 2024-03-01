@@ -17,6 +17,7 @@ func main() {
 	server := http.NewServeMux()
 	// create a health check route
 	server.HandleFunc("GET /health", auth.HealthCheck)
+	server.HandleFunc("GET /users", auth.GetAllUsersHandler)
 
 	val := os.Getenv("PORT")
 	if val == "" {
